@@ -11,11 +11,14 @@
 #include "api/client/options.pb.h"
 
 #include "absl/strings/string_view.h"
+#include "re2/re2.h"
 #include "tclap/CmdLine.h"
 
 namespace Nighthawk {
 
 using StoreCounterFilter = std::function<bool(absl::string_view, const uint64_t)>;
+
+enum class EndpointType { INVALID, IPV4, IPV6, DNS };
 
 class Utility {
 public:
@@ -54,6 +57,13 @@ public:
    * @param argv forwarded argv argument of the main entry point.
    */
   static void parseCommand(TCLAP::CmdLine& cmd, const int argc, const char* const* argv);
+
+  /**
+   * @param endpoint host:port as a string, where host can be IPv4, [IPv6], or a DNS
+   * name.
+   * @return EndpointType classification of the host:port
+   */
+  static EndpointType endpointTypeFromHostPort(const std::string& endpoint);
 };
 
 } // namespace Nighthawk
