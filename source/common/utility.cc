@@ -72,4 +72,17 @@ void Utility::parseCommand(TCLAP::CmdLine& cmd, const int argc, const char* cons
   }
 }
 
+EndpointType Utility::endpointTypeFromHostPort(const std::string& endpoint) {
+  if (RE2::FullMatch(endpoint, R"(\d+\.\d+\.\d+\.\d+:\d+)")) {
+    return EndpointType::IPV4;
+  }
+  if (RE2::FullMatch(endpoint, R"(\[[.:0-9a-fA-F]+\]:\d+)")) {
+    return EndpointType::IPV6;
+  }
+  if (RE2::FullMatch(endpoint, R"([-.0-9a-zA-Z]+:\d+)")) {
+    return EndpointType::DNS;
+  }
+  return EndpointType::INVALID;
+}
+
 } // namespace Nighthawk
