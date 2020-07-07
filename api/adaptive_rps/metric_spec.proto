@@ -47,4 +47,4 @@ message MetricSpecWithThreshold {
   MetricSpec metric_spec = 1;
   // Specifies a threshold for this metric.
   ThresholdSpec threshold_spec = 2;
-} 
+}
