@@ -42,8 +42,9 @@ message ThresholdSpec {
   google.protobuf.DoubleValue weight = 4 [(validate.rules).double = {gt: 0.0}];
 }
 
+// Metric identifier and corresponding threshold.
 message MetricSpecWithThreshold {
-  // Identifies a metric to collect and evaluate.
+  // Identifies a metric to measure.
   MetricSpec metric_spec = 1;
   // Specifies a threshold for this metric.
   ThresholdSpec threshold_spec = 2;
