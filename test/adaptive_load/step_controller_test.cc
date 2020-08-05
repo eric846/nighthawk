@@ -67,14 +67,11 @@ public:
 REGISTER_FACTORY(ConnectionsInputVariableSetterConfigFactory, InputVariableSetterConfigFactory);
 
 TEST(ExponentialSearchStepControllerConfigFactoryTest, GeneratesEmptyConfigProto) {
-  StepControllerConfigFactory& config_factory =
+  auto& config_factory =
       Envoy::Config::Utility::getAndCheckFactoryByName<StepControllerConfigFactory>(
           "nighthawk.exponential-search");
-
   Envoy::ProtobufTypes::MessagePtr message = config_factory.createEmptyConfigProto();
-
   nighthawk::adaptive_load::ExponentialSearchStepControllerConfig expected_config;
-
   EXPECT_EQ(message->DebugString(), expected_config.DebugString());
 }
 
@@ -82,14 +79,11 @@ TEST(ExponentialSearchStepControllerConfigFactoryTest, CreatesPlugin) {
   nighthawk::adaptive_load::ExponentialSearchStepControllerConfig config;
   Envoy::ProtobufWkt::Any config_any;
   config_any.PackFrom(config);
-
   nighthawk::client::CommandLineOptions options;
-
-  StepControllerConfigFactory& config_factory =
+  auto& config_factory =
       Envoy::Config::Utility::getAndCheckFactoryByName<StepControllerConfigFactory>(
           "nighthawk.exponential-search");
   StepControllerPtr plugin = config_factory.createStepController(config_any, options);
-
   EXPECT_NE(dynamic_cast<ExponentialSearchStepController*>(plugin.get()), nullptr);
 }
 
@@ -98,7 +92,6 @@ TEST(ExponentialSearchStepControllerTest, UsesInitialRps) {
   config.set_initial_value(100.0);
   nighthawk::client::CommandLineOptions options_template;
   ExponentialSearchStepController step_controller(config, options_template);
-
   EXPECT_EQ(step_controller.GetCurrentCommandLineOptions().requests_per_second().value(), 100);
 }
 
@@ -114,7 +107,6 @@ TEST(ExponentialSearchStepControllerTest, ActivatesCustomInputValueSetter) {
   step_controller_config.set_initial_value(100.0);
   nighthawk::client::CommandLineOptions options_template;
   ExponentialSearchStepController step_controller(step_controller_config, options_template);
-
   EXPECT_EQ(step_controller.GetCurrentCommandLineOptions().connections().value(), 100);
 }
 
@@ -123,7 +115,6 @@ TEST(ExponentialSearchStepControllerTest, InitiallyReportsNotConverged) {
   config.set_initial_value(100.0);
   nighthawk::client::CommandLineOptions options_template;
   ExponentialSearchStepController step_controller(config, options_template);
-
   EXPECT_FALSE(step_controller.IsConverged());
 }
 
@@ -132,9 +123,8 @@ TEST(ExponentialSearchStepControllerTest, InitiallyReportsNotDoomed) {
   config.set_initial_value(100.0);
   nighthawk::client::CommandLineOptions options_template;
   ExponentialSearchStepController step_controller(config, options_template);
-
   std::string doom_reason = "untouched";
-  EXPECT_FALSE(step_controller.IsDoomed(&doom_reason));
+  EXPECT_FALSE(step_controller.IsDoomed(doom_reason));
   EXPECT_EQ(doom_reason, "untouched");
 }
 
@@ -143,12 +133,10 @@ TEST(ExponentialSearchStepControllerTest, ReportsDoomIfOutsideThresholdsOnInitia
   config.set_initial_value(100.0);
   nighthawk::client::CommandLineOptions options_template;
   ExponentialSearchStepController step_controller(config, options_template);
-
   // Initial RPS already put us outside metric thresholds.
   step_controller.UpdateAndRecompute(MakeBenchmarkResultOutsideThreshold());
-
   std::string doom_reason;
-  EXPECT_TRUE(step_controller.IsDoomed(&doom_reason));
+  EXPECT_TRUE(step_controller.IsDoomed(doom_reason));
   EXPECT_EQ(doom_reason, "Outside threshold on initial input.");
 }
 
@@ -157,11 +145,9 @@ TEST(ExponentialSearchStepControllerTest, ReportsDoomAfterNighthawkServiceError)
   config.set_initial_value(100.0);
   nighthawk::client::CommandLineOptions options_template;
   ExponentialSearchStepController step_controller(config, options_template);
-
   step_controller.UpdateAndRecompute(MakeBenchmarkResultWithNighthawkError());
-
   std::string doom_reason;
-  EXPECT_TRUE(step_controller.IsDoomed(&doom_reason));
+  EXPECT_TRUE(step_controller.IsDoomed(doom_reason));
   EXPECT_EQ(doom_reason, "Nighthawk Service returned an error.");
 }
 
@@ -171,7 +157,6 @@ TEST(ExponentialSearchStepControllerTest,
   config.set_initial_value(100.0);
   nighthawk::client::CommandLineOptions options_template;
   ExponentialSearchStepController step_controller(config, options_template);
-
   step_controller.UpdateAndRecompute(MakeBenchmarkResultWithinThreshold());
   // Default exponent is 2.0.
   EXPECT_EQ(step_controller.GetCurrentCommandLineOptions().requests_per_second().value(), 200);
@@ -184,7 +169,6 @@ TEST(ExponentialSearchStepControllerTest,
   config.set_exponential_factor(1.5);
   nighthawk::client::CommandLineOptions options_template;
   ExponentialSearchStepController step_controller(config, options_template);
-
   step_controller.UpdateAndRecompute(MakeBenchmarkResultWithinThreshold());
   EXPECT_EQ(step_controller.GetCurrentCommandLineOptions().requests_per_second().value(), 150);
 }
@@ -194,7 +178,6 @@ TEST(ExponentialSearchStepControllerTest, PerformsBinarySearchAfterExceedingThre
   config.set_initial_value(100.0);
   nighthawk::client::CommandLineOptions options_template;
   ExponentialSearchStepController step_controller(config, options_template);
-
   step_controller.UpdateAndRecompute(MakeBenchmarkResultWithinThreshold());
   step_controller.UpdateAndRecompute(MakeBenchmarkResultOutsideThreshold());
   EXPECT_EQ(step_controller.GetCurrentCommandLineOptions().requests_per_second().value(), 150);
@@ -205,7 +188,6 @@ TEST(ExponentialSearchStepControllerTest, BinarySearchConvergesAfterManySteps) {
   config.set_initial_value(100.0);
   nighthawk::client::CommandLineOptions options_template;
   ExponentialSearchStepController step_controller(config, options_template);
-
   step_controller.UpdateAndRecompute(MakeBenchmarkResultWithinThreshold());
   step_controller.UpdateAndRecompute(MakeBenchmarkResultOutsideThreshold());
   for (int i = 0; i < 100; ++i) {
@@ -219,7 +201,6 @@ TEST(ExponentialSearchStepControllerTest, BinarySearchFindsBottomOfRange) {
   config.set_initial_value(100.0);
   nighthawk::client::CommandLineOptions options_template;
   ExponentialSearchStepController step_controller(config, options_template);
-
   step_controller.UpdateAndRecompute(MakeBenchmarkResultWithinThreshold());
   step_controller.UpdateAndRecompute(MakeBenchmarkResultOutsideThreshold());
   for (int i = 0; i < 100; ++i) {

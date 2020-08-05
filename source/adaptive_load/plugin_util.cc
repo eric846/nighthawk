@@ -11,7 +11,7 @@ namespace Nighthawk {
 
 InputVariableSetterPtr
 LoadInputVariableSetterPlugin(const envoy::config::core::v3::TypedExtensionConfig& config) {
-  InputVariableSetterConfigFactory& config_factory =
+  auto& config_factory =
       Envoy::Config::Utility::getAndCheckFactoryByName<InputVariableSetterConfigFactory>(
           config.name());
   return config_factory.createInputVariableSetter(config.typed_config());
@@ -19,13 +19,13 @@ LoadInputVariableSetterPlugin(const envoy::config::core::v3::TypedExtensionConfi
 
 ScoringFunctionPtr
 LoadScoringFunctionPlugin(const envoy::config::core::v3::TypedExtensionConfig& config) {
-  ScoringFunctionConfigFactory& config_factory =
+  auto& config_factory =
       Envoy::Config::Utility::getAndCheckFactoryByName<ScoringFunctionConfigFactory>(config.name());
   return config_factory.createScoringFunction(config.typed_config());
 }
 
 MetricsPluginPtr LoadMetricsPlugin(const envoy::config::core::v3::TypedExtensionConfig& config) {
-  MetricsPluginConfigFactory& config_factory =
+  auto& config_factory =
       Envoy::Config::Utility::getAndCheckFactoryByName<MetricsPluginConfigFactory>(config.name());
   return config_factory.createMetricsPlugin(config.typed_config());
 }
@@ -33,7 +33,7 @@ MetricsPluginPtr LoadMetricsPlugin(const envoy::config::core::v3::TypedExtension
 StepControllerPtr LoadStepControllerPlugin(
     const envoy::config::core::v3::TypedExtensionConfig& config,
     const nighthawk::client::CommandLineOptions& command_line_options_template) {
-  StepControllerConfigFactory& config_factory =
+  auto& config_factory =
       Envoy::Config::Utility::getAndCheckFactoryByName<StepControllerConfigFactory>(config.name());
   return config_factory.createStepController(config.typed_config(), command_line_options_template);
 }
