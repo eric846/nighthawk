@@ -33,6 +33,11 @@ function do_test() {
     bazel test -c dbg $BAZEL_TEST_OPTIONS --test_output=all //test/...
 }
 
+function do_integration_test() {
+    bazel build -c dbg $BAZEL_BUILD_OPTIONS //test:python_test
+    bazel test -c dbg $BAZEL_TEST_OPTIONS --test_output=all //test:python_test
+}
+
 function do_clang_tidy() {
     # clang-tidy will warn on standard library issues with libc++    
     BAZEL_BUILD_OPTIONS=("--config=clang" "${BAZEL_BUILD_OPTIONS[@]}")
@@ -215,6 +220,11 @@ case "$1" in
         do_test
         exit 0
     ;;
+    integration_test)
+        setup_clang_toolchain
+        do_integration_test
+        exit 0
+    ;;
     test_gcc)
         setup_gcc_toolchain
         do_test
@@ -271,7 +281,7 @@ case "$1" in
         exit 0
     ;;
     *)
-        echo "must be one of [opt_build, build,test,clang_tidy,coverage,coverage_integration,asan,tsan,benchmark_with_own_binaries,docker,check_format,fix_format,test_gcc]"
+        echo "must be one of [opt_build,build,test,integration_test,clang_tidy,coverage,coverage_integration,asan,tsan,benchmark_with_own_binaries,docker,check_format,fix_format,test_gcc]"
         exit 1
     ;;
 esac
